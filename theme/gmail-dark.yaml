@@ -383,5 +383,4 @@ customCSS: |
      ══════════════════════════════════════════ */
   [data-compartment] [data-slot="badge"], [data-compartment] .badge {
     background: var(--cl-compartment-bg, #1a2d52) !important;
-    color: var(--cl-compartment-fg, #8ab4f8) !important;
   }

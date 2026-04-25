@@ -129,9 +129,8 @@
   function colorCompartments() {
     document.querySelectorAll("[data-compartment]").forEach((el) => {
       const name = el.getAttribute("data-compartment") || "default";
-      const [bg, fg] = colorsFor(name);
+      const [bg] = colorsFor(name);
       el.style.setProperty("--cl-compartment-bg", bg);
-      el.style.setProperty("--cl-compartment-fg", fg);
     });
   }
 
@@ -139,16 +138,9 @@
   // Principle: backgrounds, not borders. Each row gets a tinted bg + colored
   // title so the entity is identifiable without any border chrome.
   function paintRow(row, name, bgAlpha) {
-    const [bg, fg] = colorsFor(name);
+    const [bg] = colorsFor(name);
     row.style.backgroundColor = bg + bgAlpha;
     row.style.borderLeft = "none";
-    // Title heading
-    const titleEl = row.querySelector("span.font-medium, span.font-semibold");
-    if (titleEl && !titleEl.dataset.clTitle) {
-      titleEl.dataset.clTitle = "1";
-      titleEl.style.color = fg;
-      titleEl.style.fontWeight = "600";
-    }
   }
 
   function colorSessions() {
@@ -213,15 +205,17 @@
   }
 
   // ─── Model name badges (inline text) ──────────────────────────────────────
-  // Color model name text wherever it appears (sessions list, analytics table)
+  // Tint the model name's background only — never recolor text.
   function colorModelBadges() {
     document.querySelectorAll("span.font-mono-ui, code.font-mono-ui").forEach((el) => {
-      // Skip if it's inside a skill row (already colored by colorSkills)
       if (el.closest("div.group.flex.items-start.gap-3")) return;
       const name = el.textContent.trim();
       if (!name || el.dataset.clColored === name) return;
       el.dataset.clColored = name;
-      el.style.color = accent(name);
+      const [bg] = colorsFor(name);
+      el.style.backgroundColor = bg + "66";
+      el.style.borderRadius = "4px";
+      el.style.padding = "1px 6px";
     });
   }
 
@@ -235,14 +229,14 @@
       document.head.appendChild(styleEl);
     }
     const rules = [];
-    cache.forEach(([bg, fg], name) => {
+    cache.forEach(([bg], name) => {
       const safe = CSS.escape ? CSS.escape(name) : name.replace(/[^\w-]/g, "_");
       rules.push(
         `[data-compartment="${safe}"] .badge,` +
-        `[data-compartment="${safe}"] [data-slot="badge"]{background:${bg}!important;color:${fg}!important;}`
+        `[data-compartment="${safe}"] [data-slot="badge"]{background:${bg}!important;}`
       );
       rules.push(
-        `[data-label="${safe}"]{background:${bg}!important;color:${fg}!important;` +
+        `[data-label="${safe}"]{background:${bg}!important;` +
         `border-radius:9999px!important;padding:2px 8px!important;` +
         `font-size:0.6875rem!important;font-weight:500!important;}`
       );
