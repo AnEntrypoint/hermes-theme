@@ -1,8 +1,8 @@
 # Clean Dark — Hermes dashboard theme
-# Gmail dark mode: dark surfaces, same accent palette, same structure.
-name: gmail-dark
+# Material dark mode: dark surfaces, same accent palette, same structure.
+name: clean-dark
 label: "Clean Dark"
-description: "Gmail-inspired dark: deep surfaces, red/blue accents, Roboto"
+description: "Material-inspired dark: deep surfaces, red/blue accents, Roboto"
 
 # ------- palette -------
 palette:
@@ -80,7 +80,7 @@ colorOverrides:
 # ------- customCSS -------
 customCSS: |
   /* ═══════════════════════════════════════════════════════
-     CLEAN DARK — Gmail dark mode aesthetic
+     CLEAN DARK — Material dark mode aesthetic
      ═══════════════════════════════════════════════════════ */
 
   /* ── Dark mode tokens ── */
@@ -542,4 +542,27 @@ customCSS: |
   main, main > * { background: #1f1f1f !important; }
   [class*="fixed"][class*="top-0"], [class*="sticky"][class*="top-0"] {
     background: #1f1f1f !important;
+  }
+
+  /* Zero-border policy + inbox corner */
+  *, *::before, *::after { border-color: transparent !important; border-width: 0 !important; }
+  input, textarea, select { border-width: 0 !important; }
+  input:focus, textarea:focus, select:focus { border-bottom: 2px solid #8ab4f8 !important; }
+  hr, [data-slot="separator"] { background: rgba(255,255,255,0.08) !important; height: 1px !important; border: 0 !important; }
+  tbody tr { background: #2d2e30 !important; }
+  tbody tr:nth-child(even) { background: #35363a !important; }
+  tbody tr:hover { background: #3c4043 !important; }
+
+  aside.fixed > div:first-child {
+    display: flex !important; flex-direction: row !important; align-items: center !important;
+    gap: 12px !important; height: 64px !important; padding: 0 20px !important;
+    background: #1f1f1f !important;
+  }
+  aside.fixed > div:first-child span.text-midground {
+    font-size: 1.25rem !important; font-weight: 500 !important; line-height: 1 !important;
+    letter-spacing: -0.01em !important; color: #e8eaed !important;
+    white-space: nowrap !important; mix-blend-mode: normal !important;
+  }
+  aside.fixed > div:first-child svg.cl-brand-logo {
+    width: 24px !important; height: 24px !important; color: #f28b82 !important; flex-shrink: 0 !important;
   }

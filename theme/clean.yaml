@@ -1,6 +1,6 @@
 # Clean Light — Hermes dashboard theme
 # Material You / inbox-style light theme.
-name: gmail
+name: clean
 label: "Clean Light"
 description: "Crisp white canvas, red accents, Roboto — clean inbox aesthetic"
 
@@ -115,7 +115,7 @@ customCSS: |
   body::before, body::after { display: none !important; }
   [class*="noise"], [class*="grain"] { display: none !important; opacity: 0 !important; }
   /* The dashboard renders a fixed inset-0 z-[2] decorative overlay (3D/canvas bg).
-     On a flat Gmail surface it shows through as dark grey bars over scroll regions —
+     On a flat inbox surface it shows through as dark grey bars over scroll regions —
      hide it entirely. */
   .pointer-events-none.fixed.inset-0,
   div[class*="pointer-events-none"][class*="fixed"][class*="inset-0"] {
@@ -179,7 +179,7 @@ customCSS: |
   *, *::before, *::after { color-scheme: light !important; }
 
   /* ══════════════════════════════════════════
-     SIDEBAR  — Gmail left nav rail
+     SIDEBAR  — inbox left nav rail
      ══════════════════════════════════════════ */
   /* Force color-scheme light so OS dark mode doesn't bleed through */
   :root { color-scheme: light !important; }
@@ -226,7 +226,7 @@ customCSS: |
     padding: 8px 0 !important;
   }
 
-  /* Nav links — Gmail pill shape (full-width, rounded right only) */
+  /* Nav links — inbox pill shape (full-width, rounded right only) */
   aside a[href], aside nav a, aside nav button:not([aria-label]) {
     display: flex !important;
     align-items: center !important;
@@ -247,7 +247,7 @@ customCSS: |
   }
   aside a[href]:hover, aside nav a:hover { background: var(--cl-hover) !important; }
 
-  /* Active / current route — Gmail uses red for selected nav */
+  /* Active / current route — inbox uses red for selected nav */
   aside a[aria-current="page"], aside a.active {
     background: var(--cl-red-light) !important;
     color: var(--cl-red) !important;
@@ -385,7 +385,7 @@ customCSS: |
     text-transform: none !important;
   }
 
-  /* ── Gmail inbox rows — flat rows, divider-only, hover bg ── */
+  /* ── inbox inbox rows — flat rows, divider-only, hover bg ── */
   /* Session rows inside card */
   .border.border-border [class*="border border-border p-"],
   [class*="border-border"] [class*="border border-border"],
@@ -455,7 +455,7 @@ customCSS: |
   /* ══════════════════════════════════════════
      SEARCH / INPUTS
      ══════════════════════════════════════════ */
-  /* Gmail's prominent pill search */
+  /* Material's prominent pill search */
   input[type="search"],
   input[placeholder*="Search"],
   input[placeholder*="search"] {
@@ -536,7 +536,7 @@ customCSS: |
   button[class*="size-8"]:hover { background: var(--cl-hover) !important; }
 
   /* ══════════════════════════════════════════
-     TABS — Gmail category bar
+     TABS — inbox category bar
      ══════════════════════════════════════════ */
   [role="tablist"] {
     background: var(--cl-surface) !important;
@@ -691,7 +691,7 @@ customCSS: |
      GMAIL PAGE POLISH
      ══════════════════════════════════════════ */
 
-  /* Page-level padding — Gmail uses 0 side padding on the outer shell,
+  /* Page-level padding — inbox uses 0 side padding on the outer shell,
      content areas have their own internal padding */
   main > div > div { padding-left: 0 !important; padding-right: 0 !important; }
 
@@ -711,7 +711,7 @@ customCSS: |
     font-weight: 500 !important;
   }
 
-  /* Session list rows — tighter Gmail density */
+  /* Session list rows — tighter inbox density */
   .flex.flex-col.sm\:flex-row.sm\:items-center {
     padding: 8px 16px !important;
     min-height: 52px !important;
@@ -740,7 +740,7 @@ customCSS: |
   /* Sticky filter panels (skills page, config page sidebar) */
   .sm\:sticky { background: #f6f8fc !important; }
 
-  /* Category / filter pills (skills, config) — Gmail chip size */
+  /* Category / filter pills (skills, config) — inbox chip size */
   button[class*="rounded-full"][class*="border"],
   aside button, aside a[role="button"],
   [class*="sm:w-56"] button, [class*="sm:sticky"] button {
@@ -780,7 +780,7 @@ customCSS: |
   }
 
   /* ══════════════════════════════════════════
-     LOGO CORNER (top-left) — Gmail logo well
+     LOGO CORNER (top-left) — inbox logo well
      ══════════════════════════════════════════ */
   aside > div:first-child,
   aside > a:first-child,
@@ -830,7 +830,7 @@ customCSS: |
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
   }
-  /* Row separation: gap, not divider — Gmail uses tonal hover only */
+  /* Row separation: gap, not divider — inbox uses tonal hover only */
   .border.border-border [class*="border border-border"],
   [class*="border-border"] [class*="border border-border"],
   [class*="border-b border-border"], [class*="border-b border-current"],
@@ -911,14 +911,14 @@ customCSS: |
     background: var(--cl-hover) !important;
   }
 
-  /* Page-title row — Gmail uses generous space, no divider */
+  /* Page-title row — inbox uses generous space, no divider */
   header, [class*="h-14"][class*="border-b"], [class*="h-12"][class*="border-b"] {
     border-bottom: none !important;
     background: var(--cl-bg) !important;
     height: 56px !important;
   }
 
-  /* Section titles inside cards: small uppercase Gmail label */
+  /* Section titles inside cards: small uppercase inbox label */
   main h2, main h3 {
     font-size: 0.875rem !important;
     font-weight: 500 !important;
@@ -955,11 +955,68 @@ customCSS: |
     border-radius: 0 !important;
   }
 
-  /* Log lines — flat rows */
-  [class*="font-mono"][class*="text-xs"][class*="py-"] {
-    border-bottom: 1px solid var(--cl-divider) !important;
-    padding: 6px 16px !important;
+  /* ══════════════════════════════════════════
+     LOG VIEWER — inbox/Material readable monospace
+     ══════════════════════════════════════════ */
+  /* Outer scroll container: white surface, generous viewport */
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] {
     background: #ffffff !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    line-height: 22px !important;
+    max-height: calc(100vh - 180px) !important;
+  }
+  /* Each log line is a row: full width, single line, no wrap, hover */
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div {
+    display: block !important;
+    margin: 0 !important;
+    padding: 4px 16px 4px 16px !important;
+    white-space: pre !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: "Roboto Mono", ui-monospace, monospace !important;
+    font-size: 13px !important;
+    line-height: 22px !important;
+    background: #ffffff !important;
+    color: var(--cl-text-1) !important;
+    transition: background 0.08s !important;
+    cursor: text !important;
+  }
+  /* Zebra rows for scannability */
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div:nth-child(even) {
+    background: #f8f9fa !important;
+  }
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div:hover {
+    background: #e8f0fe !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    z-index: 1 !important;
+    position: relative !important;
+  }
+  /* Severity colour: keep semantic colours but desaturated/inbox-tone */
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning,
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"] {
+    color: #b06000 !important;
+    background: #fff8e1 !important;
+  }
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning:nth-child(even),
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"]:nth-child(even) {
+    background: #fef7e0 !important;
+  }
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-destructive,
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-destructive"],
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-error"] {
+    color: #c5221f !important;
+    background: #fce8e6 !important;
+  }
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-success,
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-success"] {
+    color: #137333 !important;
+    background: #e6f4ea !important;
+  }
+  div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-muted-foreground {
+    color: var(--cl-text-3) !important;
   }
 
   /* Stat / summary cards (analytics) — white flat tiles separated by dividers */
@@ -979,6 +1036,65 @@ customCSS: |
   }
 
   /* ══════════════════════════════════════════
+     ZERO-BORDER POLICY — inbox uses surface tones, never lines
+     ══════════════════════════════════════════ */
+  /* Universal: zero out every border on every element except form controls.
+     Surface separation comes from background tones (cl-bg / cl-surface /
+     cl-surface-2 / cl-hover) plus generous spacing. */
+  *, *::before, *::after {
+    border-color: transparent !important;
+    border-width: 0 !important;
+  }
+  /* Form controls keep a hairline only on focus */
+  input, textarea, select {
+    border-width: 0 !important;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-bottom: 2px solid var(--cl-blue) !important;
+  }
+  /* Dividers via separator slot become 1px tonal bands, not borders */
+  hr, [data-slot="separator"] {
+    background: var(--cl-divider) !important;
+    height: 1px !important;
+    border: 0 !important;
+  }
+  /* Re-introduce row separation as background tone difference, not lines */
+  tbody tr { background: var(--cl-surface) !important; }
+  tbody tr:nth-child(even) { background: var(--cl-surface-2) !important; }
+  tbody tr:hover { background: var(--cl-hover) !important; }
+
+  /* ══════════════════════════════════════════
+     GMAIL CORNER — logo + wordmark on one row
+     ══════════════════════════════════════════ */
+  /* Header row holds small diamond + "Thoth Agent" wordmark on a single line */
+  aside.fixed > div:first-child {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    height: 64px !important;
+    padding: 0 20px !important;
+    background: var(--cl-bg) !important;
+  }
+  /* Single-line wordmark */
+  aside.fixed > div:first-child span.text-midground {
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.01em !important;
+    color: var(--cl-text-1) !important;
+    white-space: nowrap !important;
+    mix-blend-mode: normal !important;
+  }
+  /* Plugin-injected diamond logo — small Material-style mark */
+  aside.fixed > div:first-child svg.cl-brand-logo {
+    width: 24px !important;
+    height: 24px !important;
+    color: var(--cl-red) !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ══════════════════════════════════════════
      COMPARTMENT COLOURS — random pastel per name
      (plugin injects --cl-compartment-bg/fg)
      ══════════════════════════════════════════ */
@@ -986,3 +1102,8 @@ customCSS: |
   [data-compartment] .badge {
     background: var(--cl-compartment-bg, var(--cl-blue-light)) !important;
   }
+
+  /* INBOX-LIKE FINAL POLISH lives in the clean-skin plugin (CSS injected
+     at runtime). Adding it here would push customCSS past the 32 KB cap
+     enforced by web_server.py:_THEME_CUSTOM_CSS_MAX, silently truncating
+     the rest of this file. */

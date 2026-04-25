@@ -244,6 +244,259 @@
     styleEl.textContent = rules.join("\n");
   }
 
+  // ─── Inbox polish stylesheet (injected once, plugin-owned) ───────────────
+  // Theme YAML's customCSS is capped at 32 KB by the backend; the plugin can
+  // append unlimited CSS via a <style> tag. Keep large polish blocks here.
+  const POLISH_CSS = `
+    /* Active nav: red bg, dark text (Inbox-style), red icon */
+    aside a[aria-current="page"], aside a.active {
+      background: var(--cl-red-light) !important;
+      color: var(--cl-text-1) !important;
+      font-weight: 700 !important;
+    }
+    aside a[aria-current="page"] svg, aside a.active svg {
+      color: var(--cl-red) !important;
+    }
+
+    /* Search input: clear leading-icon overlap, big pill */
+    input[type="search"], input[placeholder*="Search"], input[placeholder*="search"] {
+      padding-left: 56px !important;
+      height: 48px !important;
+      font-size: 0.875rem !important;
+      background: var(--cl-hover) !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+      max-width: 720px !important;
+      width: 100% !important;
+    }
+    input[type="search"]:hover, input[placeholder*="Search"]:hover { background: #e8eaed !important; }
+    input[type="search"]:focus, input[placeholder*="Search"]:focus {
+      background: var(--cl-surface) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04) !important;
+      outline: none !important;
+    }
+    .relative > svg.lucide-search,
+    .relative > svg[class*="search"] {
+      color: var(--cl-text-3) !important;
+      width: 20px !important; height: 20px !important;
+      left: 18px !important;
+    }
+
+    /* Page title h1 */
+    main h1, header h1 {
+      font-size: 1.375rem !important;
+      font-weight: 400 !important;
+      color: var(--cl-text-1) !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+    }
+    /* Title-adjacent count badge — Inbox unread style */
+    main h1 + [data-slot="badge"], main h2 + [data-slot="badge"],
+    main h1 + span[class*="rounded"], main h2 + span[class*="rounded"] {
+      background: transparent !important;
+      color: var(--cl-text-3) !important;
+      font-size: 0.75rem !important;
+      font-weight: 500 !important;
+      padding: 0 0 0 8px !important;
+      letter-spacing: 0 !important;
+    }
+
+    /* Section labels (Recent Sessions, Daily Token Usage, etc.) */
+    main h2, main h3 {
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      color: var(--cl-text-3) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      margin: 0 0 8px 0 !important;
+    }
+    main h2 svg, main h3 svg {
+      color: var(--cl-text-3) !important;
+      width: 14px !important; height: 14px !important;
+    }
+
+    main span.font-medium { font-weight: 500 !important; color: var(--cl-text-1) !important; }
+    main [class*="text-muted-foreground"] { color: var(--cl-text-2) !important; }
+
+    /* Stat tiles */
+    main [class*="grid"] > [class*="bg-card"],
+    main [class*="grid"] > div[class*="rounded"] {
+      background: var(--cl-surface) !important;
+      border-radius: 8px !important;
+      padding: 20px 24px !important;
+      box-shadow: none !important;
+    }
+    main [class*="text-2xl"], main [class*="text-3xl"], main [class*="text-4xl"] {
+      font-weight: 400 !important;
+      color: var(--cl-text-1) !important;
+      letter-spacing: -0.01em !important;
+    }
+
+    /* Primary CTA: blue Material flat.
+       Match buttons that are clearly text+optional-icon CTAs (have a non-trivial
+       width like h-8/h-9/h-10 + px-3+ + visible text), but exclude:
+         - icon-only square buttons (w-7/w-8 + h-7/h-8)
+         - h-7 range chips (no w-7)
+         - rounded-full pills */
+    button[class~="bg-foreground"]:not([class*="w-7"]):not([class*="w-8"]):not([class*="rounded-full"]):not([class*="size-"]):not([class*="h-7"]),
+    button[class~="bg-foreground/90"]:not([class*="w-7"]):not([class*="w-8"]):not([class*="rounded-full"]):not([class*="h-7"]),
+    button[data-variant="default"] {
+      background: var(--cl-blue) !important;
+      color: #ffffff !important;
+      border-radius: 8px !important;
+      height: 36px !important;
+      padding: 0 24px !important;
+      font-weight: 500 !important;
+      font-size: 0.875rem !important;
+      box-shadow: 0 1px 2px rgba(60,64,67,0.15) !important;
+    }
+    button[class~="bg-foreground"]:not([class*="w-7"]):not([class*="w-8"]):not([class*="rounded-full"]):not([class*="h-7"]):hover,
+    button[data-variant="default"]:hover {
+      background: #1557b0 !important;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.25), 0 2px 6px rgba(60,64,67,0.10) !important;
+    }
+    button[class~="bg-foreground"]:not([class*="w-7"]):not([class*="w-8"]):not([class*="rounded-full"]):not([class*="h-7"]) svg,
+    button[data-variant="default"] svg { color: #ffffff !important; }
+
+    /* Small icon-only buttons (h-7 w-7) — Inbox round hover chip */
+    button[class*="h-7"][class*="w-7"], button[class*="size-7"],
+    button[class*="h-8"][class*="w-8"], button[class*="size-8"] {
+      background: transparent !important;
+      border-radius: 9999px !important;
+      box-shadow: none !important;
+      color: var(--cl-text-2) !important;
+    }
+    button[class*="h-7"][class*="w-7"]:hover, button[class*="size-7"]:hover,
+    button[class*="h-8"][class*="w-8"]:hover, button[class*="size-8"]:hover {
+      background: var(--cl-hover) !important;
+    }
+
+    /* Range chips — h-7 buttons (7d/30d/90d/Refresh). Live in header, not
+       main. Match anywhere; exclude w-7 icon-only buttons. */
+    button[class*="h-7"]:not([class*="w-7"]) {
+      background: transparent !important;
+      color: var(--cl-text-2) !important;
+      border-radius: 9999px !important;
+      height: 32px !important;
+      padding: 0 14px !important;
+      font-size: 0.8125rem !important;
+      font-weight: 500 !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+      box-shadow: none !important;
+    }
+    button[class*="h-7"]:not([class*="w-7"]):hover { background: var(--cl-hover) !important; }
+    /* Active range chip = light-blue chip, blue text */
+    button[class*="h-7"][class~="bg-foreground/90"],
+    button[class*="h-7"][class~="bg-foreground"],
+    button[class*="h-7"][aria-pressed="true"],
+    button[class*="h-7"][data-state="active"] {
+      background: var(--cl-blue-light) !important;
+      color: var(--cl-blue) !important;
+      box-shadow: none !important;
+    }
+
+    /* Sentence-case all body text in main; only h2/h3/labels stay uppercase. */
+    main div, main p, main span, main button, main td, main a {
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+    main h2, main h3, main label {
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+    }
+    /* Override the older yaml rule that uppercases first-child header rows
+       inside [class*="border-border"] containers — only apply that uppercase
+       treatment to elements that are clearly section heads (h2/h3/h4),
+       not to text body divs that happen to be first child. */
+    [class*="border-border"] > div:first-child:not(:has(h2)):not(:has(h3)):not(:has(h4)),
+    [class*="p-4 border-b"]:not(:has(h2)):not(:has(h3)):not(:has(h4)) {
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+      font-size: 0.875rem !important;
+      font-weight: 400 !important;
+      color: var(--cl-text-2) !important;
+    }
+    /* And specifically force empty-state center text to look friendly */
+    [class*="text-center"][class*="text-muted-foreground"] {
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+      font-size: 0.875rem !important;
+      font-weight: 400 !important;
+      color: var(--cl-text-2) !important;
+      padding: 32px 0 !important;
+    }
+    main [class*="text-center"][class*="text-muted"],
+    main p[class*="uppercase"], main div[class*="uppercase"] {
+      font-size: 0.875rem !important;
+      letter-spacing: 0 !important;
+      font-weight: 400 !important;
+      color: var(--cl-text-2) !important;
+      padding: 32px 0 !important;
+    }
+
+    /* Form labels */
+    main label {
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      color: var(--cl-text-3) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      margin-bottom: 4px !important;
+      display: block !important;
+    }
+
+    /* Table headers — sentence case */
+    table th {
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+      font-size: 0.75rem !important;
+      font-weight: 500 !important;
+      color: var(--cl-text-3) !important;
+      padding: 10px 16px !important;
+    }
+    table td { padding: 12px 16px !important; font-size: 0.875rem !important; }
+
+    /* Sidebar footer block */
+    aside > div:last-child, aside [class*="border-t"]:last-child {
+      background: var(--cl-bg) !important;
+      padding: 8px 12px !important;
+    }
+    aside > div:last-child * {
+      font-size: 0.75rem !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+
+    /* CLI / source pill on the right of a session row */
+    [class*="rounded-full"][class*="px-"][class*="text-xs"],
+    span[class*="bg-muted"][class*="rounded"] {
+      background: var(--cl-surface-2) !important;
+      color: var(--cl-text-2) !important;
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      padding: 2px 8px !important;
+      border-radius: 9999px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.04em !important;
+    }
+  `;
+
+  function injectPolish() {
+    let s = document.getElementById('cl-skin-polish');
+    if (!s) {
+      s = document.createElement('style');
+      s.id = 'cl-skin-polish';
+      s.textContent = POLISH_CSS;
+    }
+    // Always re-append at end of <head> so we win the cascade against any
+    // stylesheet (Tailwind, theme.customCSS, vite HMR-injected) that mounts
+    // after us.
+    if (document.head.lastElementChild !== s) {
+      document.head.appendChild(s);
+    }
+  }
+
   // ─── Brand rename: Hermes → Thoth ─────────────────────────────────────────
   // Replace text content only — never touch attributes, ids, classes.
   function renameBrand(root) {
@@ -255,9 +508,62 @@
       if (v && /Hermes/.test(v)) hits.push(n);
     }
     hits.forEach(n => { n.nodeValue = n.nodeValue.replace(/Hermes/g, "Thoth"); });
-    // Also patch document.title once per change
     if (/Hermes/.test(document.title)) {
       document.title = document.title.replace(/Hermes/g, "Thoth");
+    }
+  }
+
+  // ─── Brand mark fix-up ────────────────────────────────────────────────────
+  // Source DOM: header span = `Thoth<br>Agent`, diamond logo in its own row
+  // below. Make it inbox: single row = small diamond + single-line wordmark.
+  const DIAMOND_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" class="cl-brand-logo" ' +
+    'viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M14 2 L26 14 L14 26 L2 14 Z"/></svg>';
+
+  function fixBrandMark() {
+    const aside = document.querySelector('aside.fixed');
+    if (!aside) return;
+    const header = aside.children[0];
+    if (!header) return;
+
+    // 1. Replace <br> in wordmark with a space; force single line.
+    const wordmark = header.querySelector('span.text-midground');
+    if (wordmark && wordmark.querySelector('br')) {
+      wordmark.querySelectorAll('br').forEach(br => br.replaceWith(' '));
+      wordmark.style.whiteSpace = 'nowrap';
+      wordmark.style.lineHeight = '1';
+    }
+
+    // 2. Hide every sibling row whose ONLY visible content is a 28x28 diamond
+    //    SVG (the original logo row). Detect by: small height, single svg
+    //    with viewBox '0 0 28 28', no text.
+    for (let i = 1; i < aside.children.length; i++) {
+      const ch = aside.children[i];
+      if (ch.dataset.clLogoRowHandled === '1') continue;
+      const text = (ch.textContent || '').trim();
+      if (text) continue;
+      const svgs = ch.querySelectorAll('svg');
+      if (svgs.length !== 1) continue;
+      if (svgs[0].getAttribute('viewBox') !== '0 0 28 28') continue;
+      ch.style.display = 'none';
+      ch.dataset.clLogoRowHandled = '1';
+    }
+
+    // 3. Inject our own diamond into the header before the wordmark, once.
+    //    Drop any stale cloned mark that doesn't match our diamond viewBox.
+    header.querySelectorAll('svg.cl-brand-logo').forEach(s => {
+      if (s.getAttribute('viewBox') !== '0 0 28 28') s.remove();
+    });
+    if (wordmark && !header.querySelector('svg.cl-brand-logo')) {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = DIAMOND_SVG.trim();
+      const svg = tpl.content.firstChild;
+      svg.setAttribute('width', '24');
+      svg.setAttribute('height', '24');
+      svg.style.cssText = 'flex-shrink:0;width:24px;height:24px;color:#d93025;';
+      wordmark.parentNode.insertBefore(svg, wordmark);
     }
   }
 
@@ -271,6 +577,8 @@
     colorModelBadges();
     refreshStyleSheet();
     renameBrand();
+    fixBrandMark();
+    injectPolish();
   }
 
   function startObserver() {
@@ -369,7 +677,7 @@
   };
 
   if (PLUGINS.register) {
-    PLUGINS.register("gmail-skin", () =>
+    PLUGINS.register("clean-skin", () =>
       (SDK.React || window.React).createElement(
         "div",
         { style: { padding: "1rem", color: "#5f6368", fontSize: "0.875rem" } },
