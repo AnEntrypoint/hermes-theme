@@ -1,15 +1,15 @@
 /**
- * Clean Light skin — Hermes dashboard plugin.
+ * Clean Light / Dark skin — Hermes dashboard plugin.
  *
- * Assigns deterministic pastel colours to every named entity:
- * compartments, sessions, skills, cron jobs, models, platforms.
- * The same entity name always gets the same colour — across pages,
- * reloads, and SPA navigations.
+ * Every user-created entity (session, skill, cron job, model, compartment)
+ * gets a stable, deterministic colour derived from its name.
+ * Colours persist across reloads via localStorage and are fully reassignable.
  *
- * Colours are reassignable at runtime via:
- *   window.__debug["cl-skin"].reassign("entity-name", paletteIndex)
- *   window.__debug["cl-skin"].reset("entity-name")
+ * Reassignment API (browser console):
+ *   window.__debug["cl-skin"].reassign("name", 0-19)
+ *   window.__debug["cl-skin"].reset("name")
  *   window.__debug["cl-skin"].resetAll()
+ *   window.__debug["cl-skin"].list()        // show all assigned names + indices
  */
 (function () {
   "use strict";
@@ -18,8 +18,8 @@
   const PLUGINS = window.__HERMES_PLUGINS__;
   if (!SDK || !PLUGINS) return;
 
-  // Material You tonal pairs — [bg, fg]
-  const PALETTES = [
+  // Light palette — [bg tint, accent fg]
+  const P_LIGHT = [
     ["#fce8e6", "#c5221f"],
     ["#e8f0fe", "#1a73e8"],
     ["#e6f4ea", "#137333"],
@@ -36,14 +36,14 @@
     ["#f3e5f5", "#6a1b9a"],
     ["#e8eaf6", "#283593"],
     ["#e0f2f1", "#004d40"],
-    ["#fce4ec", "#880e4f"],
+    ["#fce4ec", "#c62828"],
     ["#e3f2fd", "#0d47a1"],
     ["#f1f8e9", "#33691e"],
     ["#ede7f6", "#4527a0"],
   ];
 
-  // DARK mode equivalents — same index, dark-surface-friendly
-  const PALETTES_DARK = [
+  // Dark palette — same indices, dark-surface variants
+  const P_DARK = [
     ["#4a1512", "#f28b82"],
     ["#1a2f5e", "#8ab4f8"],
     ["#1a3320", "#81c995"],
@@ -66,23 +66,39 @@
     ["#1a0f42", "#b39ddb"],
   ];
 
+  // Detect dark mode via computed background brightness (immune to CSS var tricks)
   function isDark() {
-    return document.documentElement.classList.contains("dark") ||
-      getComputedStyle(document.documentElement).colorScheme === "dark" ||
-      (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches &&
-        !document.documentElement.style.colorScheme.includes("light"));
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const m = bg.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!m) return false;
+    const lum = 0.299 * +m[1] + 0.587 * +m[2] + 0.114 * +m[3];
+    return lum < 128;
   }
 
   function djb2(s) {
     let h = 5381;
     for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-    return Math.abs(h) % PALETTES.length;
+    return Math.abs(h) % P_LIGHT.length;
   }
 
-  // name → palette index (overridable)
-  const overrides = new Map();
-  // name → [bg, fg] cache (cleared on dark/light switch)
+  // Persistent overrides — survive page reload
+  const STORE_KEY = "cl-skin-overrides";
+  const overrides = new Map(
+    JSON.parse(localStorage.getItem(STORE_KEY) || "[]")
+  );
+
+  function saveOverrides() {
+    localStorage.setItem(STORE_KEY, JSON.stringify([...overrides]));
+  }
+
+  // Runtime cache — cleared on dark/light switch detected
+  let _lastDark = isDark();
   const cache = new Map();
+
+  function checkThemeSwitch() {
+    const dark = isDark();
+    if (dark !== _lastDark) { _lastDark = dark; cache.clear(); }
+  }
 
   function indexFor(name) {
     return overrides.has(name) ? overrides.get(name) : djb2(name);
@@ -91,16 +107,26 @@
   function colorsFor(name) {
     if (!cache.has(name)) {
       const idx = indexFor(name);
-      cache.set(name, isDark() ? PALETTES_DARK[idx] : PALETTES[idx]);
+      cache.set(name, _lastDark ? P_DARK[idx] : P_LIGHT[idx]);
     }
     return cache.get(name);
   }
 
   function accent(name) { return colorsFor(name)[1]; }
+  function tint(name, opacity) {
+    const [bg] = colorsFor(name);
+    return bg + opacity; // hex + 2-char alpha e.g. "66" = 40%
+  }
 
-  // ─── Compartment coloring (data-compartment attr) ─────────────────────────
+  // ─── Mark element as colored (idempotent per name) ────────────────────────
+  function mark(el, name) {
+    if (el.dataset.clColored === name) return false;
+    el.dataset.clColored = name;
+    return true;
+  }
 
-  function applyCompartmentColors() {
+  // ─── Compartments (data-compartment attr) ─────────────────────────────────
+  function colorCompartments() {
     document.querySelectorAll("[data-compartment]").forEach((el) => {
       const name = el.getAttribute("data-compartment") || "default";
       const [bg, fg] = colorsFor(name);
@@ -109,83 +135,100 @@
     });
   }
 
-  // ─── Session row coloring ─────────────────────────────────────────────────
-  // Session rows: div.flex.flex-col.sm\:flex-row... containing a <span.font-medium>
-  // Expanded rows: div.border.overflow-hidden.transition-colors.border-border
-
-  function colorSessionRows() {
-    // Collapsed session list rows — must have a font-mono-ui sibling (model name)
-    document.querySelectorAll(
-      "div.flex.flex-col.sm\\:flex-row.sm\\:items-center"
-    ).forEach((row) => {
-      const title = row.querySelector("span.font-medium");
-      const model = row.querySelector("span.font-mono-ui");
-      if (!title || !model) return; // skip non-session rows
-      const name = title.textContent.trim() || "Untitled";
+  // ─── Session rows (/sessions page) ────────────────────────────────────────
+  // Two variants:
+  //   1. Compact list: div.flex.flex-col.sm:flex-row.sm:items-center  (has font-mono-ui model)
+  //   2. Accordion:    div.border.overflow-hidden.transition-colors    (has font-mono model)
+  function colorSessions() {
+    // Compact rows — require a model badge to confirm it's a session row
+    document.querySelectorAll("div.flex.flex-col.sm\\:flex-row.sm\\:items-center").forEach((row) => {
+      const titleEl = row.querySelector("span.font-medium");
+      const modelEl = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
+      if (!titleEl || !modelEl) return;
+      const name = titleEl.textContent.trim() || "Untitled";
+      if (!mark(row, name)) return;
       const [bg, fg] = colorsFor(name);
-      if (row.dataset.clColored === name) return;
-      row.dataset.clColored = name;
       row.style.borderLeft = `4px solid ${fg}`;
       row.style.paddingLeft = "calc(0.75rem - 4px)";
-      row.style.background = bg + "66"; // 40% tint
+      row.style.backgroundColor = bg + "55";
     });
 
-    // Expandable session rows (accordion style) — must contain a font-mono-ui model
-    document.querySelectorAll(
-      "div.border.overflow-hidden.transition-colors.border-border"
-    ).forEach((row) => {
-      const model = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
-      if (!model) return; // skip non-session accordions
-      const title = row.querySelector("span.font-medium, span.font-semibold, h3");
-      if (!title) return;
-      const name = title.textContent.trim() || "Untitled";
-      const [bg, fg] = colorsFor(name);
-      if (row.dataset.clColored === name) return;
-      row.dataset.clColored = name;
+    // Accordion rows — require model text
+    document.querySelectorAll("div.border.overflow-hidden.transition-colors.border-border").forEach((row) => {
+      const modelEl = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
+      if (!modelEl) return;
+      const titleEl = row.querySelector("span.font-medium, span.font-semibold");
+      if (!titleEl) return;
+      const name = titleEl.textContent.trim() || "Untitled";
+      if (!mark(row, name)) return;
+      const fg = accent(name);
       row.style.borderLeft = `4px solid ${fg}`;
     });
   }
 
-  // ─── Skill card coloring ──────────────────────────────────────────────────
-
-  function colorSkillCards() {
-    // Skill cards have a name as the first heading inside the card
-    document.querySelectorAll(
-      "div.border.border-border.bg-card\\/80, div.border.border-border.bg-muted\\/20"
-    ).forEach((card) => {
-      const heading = card.querySelector("h3, h4, span.font-medium, span.font-semibold");
-      if (!heading) return;
-      const name = heading.textContent.trim();
+  // ─── Skill rows (/skills page) ─────────────────────────────────────────────
+  // Each skill: div.group.flex.items-start.gap-3.px-3.py-2.5
+  // Name: first span.font-mono-ui or first anchor/span text
+  function colorSkills() {
+    document.querySelectorAll("div.group.flex.items-start.gap-3").forEach((row) => {
+      // Must have a switch to confirm it's a skill row, not something else
+      const sw = row.querySelector('[role="switch"]');
+      if (!sw) return;
+      const nameEl = row.querySelector("span.font-mono-ui, a[href], span:first-child");
+      if (!nameEl) return;
+      const name = nameEl.textContent.trim();
       if (!name) return;
-      if (card.dataset.clColored === name) return;
-      card.dataset.clColored = name;
+      if (!mark(row, name)) return;
       const [bg, fg] = colorsFor(name);
-      card.style.borderLeft = `4px solid ${fg}`;
-      card.style.background = bg + "55";
+      row.style.borderLeft = `3px solid ${fg}`;
+      row.style.backgroundColor = bg + "44";
     });
   }
 
-  // ─── Model badges ─────────────────────────────────────────────────────────
+  // ─── Cron job rows (/cron page) ────────────────────────────────────────────
+  // Job rows contain a name heading + schedule badge + status badge
+  // Selector: card containers with a cron schedule pattern (e.g. "0 9 * * *")
+  function colorCronJobs() {
+    document.querySelectorAll("div.border.border-border.bg-card\\/80").forEach((card) => {
+      // Identify as cron job card: must have a schedule-like text (digits/stars/spaces)
+      const txt = card.textContent || "";
+      const hasSchedule = /\d+\s+[\d\*]+\s+[\d\*]+\s+[\d\*]+\s+[\d\*]+/.test(txt);
+      const hasPause = card.querySelector('[aria-label*="ause"], [title*="ause"], [aria-label*="rigger"]');
+      if (!hasSchedule && !hasPause) return;
 
+      // Name: first h3/h4 or first bold span
+      const nameEl = card.querySelector("h3, h4, span.font-semibold, span.font-medium");
+      if (!nameEl) return;
+      const name = nameEl.textContent.trim();
+      if (!name || name === "New Cron Job") return; // skip create form
+      if (!mark(card, name)) return;
+      const [bg, fg] = colorsFor(name);
+      card.style.borderLeft = `4px solid ${fg}`;
+      card.style.backgroundColor = bg + "55";
+    });
+  }
+
+  // ─── Model name badges (inline text) ──────────────────────────────────────
+  // Color model name text wherever it appears (sessions list, analytics table)
   function colorModelBadges() {
     document.querySelectorAll("span.font-mono-ui, code.font-mono-ui").forEach((el) => {
+      // Skip if it's inside a skill row (already colored by colorSkills)
+      if (el.closest("div.group.flex.items-start.gap-3")) return;
       const name = el.textContent.trim();
       if (!name || el.dataset.clColored === name) return;
       el.dataset.clColored = name;
-      const fg = accent(name);
-      el.style.color = fg;
+      el.style.color = accent(name);
     });
   }
 
-  // ─── Global stylesheet for data-label and data-compartment badges ──────────
-
+  // ─── data-label badges ────────────────────────────────────────────────────
   function refreshStyleSheet() {
     const id = "cl-skin-entity-styles";
-    let el = document.getElementById(id);
-    if (!el) {
-      el = document.createElement("style");
-      el.id = id;
-      document.head.appendChild(el);
+    let styleEl = document.getElementById(id);
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = id;
+      document.head.appendChild(styleEl);
     }
     const rules = [];
     cache.forEach(([bg, fg], name) => {
@@ -200,33 +243,33 @@
         `font-size:0.6875rem!important;font-weight:500!important;}`
       );
     });
-    el.textContent = rules.join("\n");
+    styleEl.textContent = rules.join("\n");
   }
 
   // ─── Main scan ────────────────────────────────────────────────────────────
-
   function scan() {
-    applyCompartmentColors();
-    colorSessionRows();
-    colorSkillCards();
+    checkThemeSwitch();
+    colorCompartments();
+    colorSessions();
+    colorSkills();
+    colorCronJobs();
     colorModelBadges();
     refreshStyleSheet();
   }
 
   function startObserver() {
     const obs = new MutationObserver(scan);
-    obs.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["data-compartment", "class"],
+    obs.observe(document.body, { subtree: true, childList: true,
+      attributes: true, attributeFilter: ["data-compartment", "class"] });
+  }
+
+  function clearStaleMarkers() {
+    document.querySelectorAll("[data-cl-colored]").forEach(el => {
+      delete el.dataset.clColored;
     });
   }
 
-  function init() {
-    scan();
-    startObserver();
-  }
+  function init() { clearStaleMarkers(); scan(); startObserver(); }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
@@ -236,41 +279,59 @@
 
   setInterval(scan, 3000);
 
-  // ─── Observability + reassignment API ─────────────────────────────────────
-
+  // ─── Public API ──────────────────────────────────────────────────────────
   window.__debug = window.__debug || {};
   window.__debug["cl-skin"] = {
-    palettes: PALETTES,
-    palettesDark: PALETTES_DARK,
-    cache,
-    overrides,
+    palettes: { light: P_LIGHT, dark: P_DARK },
+    cache, overrides,
     getColors: colorsFor,
     rescan: scan,
-    // Reassign entity name to a different palette index (0-19)
+
+    list() {
+      const out = [];
+      cache.forEach(([bg, fg], name) => {
+        out.push({ name, index: indexFor(name), bg, fg, override: overrides.has(name) });
+      });
+      return out;
+    },
+
     reassign(name, idx) {
-      if (idx < 0 || idx >= PALETTES.length) throw new RangeError(`idx must be 0-${PALETTES.length - 1}`);
+      if (idx < 0 || idx >= P_LIGHT.length)
+        throw new RangeError(`idx must be 0-${P_LIGHT.length - 1}`);
       overrides.set(name, idx);
+      saveOverrides();
       cache.delete(name);
-      // Clear data-cl-colored so rows re-paint
       document.querySelectorAll(`[data-cl-colored="${name}"]`).forEach(el => {
         delete el.dataset.clColored;
+        el.style.removeProperty("border-left");
+        el.style.removeProperty("background-color");
+        el.style.removeProperty("color");
       });
       scan();
     },
-    // Reset an entity to its hash-derived colour
+
     reset(name) {
       overrides.delete(name);
+      saveOverrides();
       cache.delete(name);
       document.querySelectorAll(`[data-cl-colored="${name}"]`).forEach(el => {
         delete el.dataset.clColored;
+        el.style.removeProperty("border-left");
+        el.style.removeProperty("background-color");
+        el.style.removeProperty("color");
       });
       scan();
     },
+
     resetAll() {
       overrides.clear();
+      saveOverrides();
       cache.clear();
       document.querySelectorAll("[data-cl-colored]").forEach(el => {
         delete el.dataset.clColored;
+        el.style.removeProperty("border-left");
+        el.style.removeProperty("background-color");
+        el.style.removeProperty("color");
       });
       scan();
     },
@@ -281,7 +342,7 @@
       (SDK.React || window.React).createElement(
         "div",
         { style: { padding: "1rem", color: "#5f6368", fontSize: "0.875rem" } },
-        "Clean Light skin active — entity colours injected.",
+        "Clean Light skin active — entity colours applied.",
       ),
     );
   }
