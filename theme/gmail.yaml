@@ -294,7 +294,29 @@ customCSS: |
     padding: 0 !important;
     color: #202124 !important;
   }
-  main > div { background: transparent !important; }
+  /* Every descendant of main that is transparent will show the dark root — prevent this */
+  main > div,
+  main > div > div,
+  main > div > div > div,
+  main > div > div > div > div {
+    background: #f6f8fc !important;
+  }
+  /* Flex wrappers that lay out page columns (e.g. skills filter + list) */
+  .flex.flex-col.sm\:flex-row,
+  .flex.sm\:flex-row,
+  [class*="sm:flex-row"] {
+    background: #f6f8fc !important;
+  }
+  /* The filter aside column in skills/config — must stretch to fill so no transparent gap */
+  .sm\:w-56.sm\:shrink-0 {
+    align-self: stretch !important;
+    background: #f6f8fc !important;
+    min-height: 100% !important;
+  }
+  /* Any sticky sidebar panel inside the filter aside */
+  .sm\:sticky.sm\:top-0 {
+    background: #f6f8fc !important;
+  }
 
   /* ── Section cards (outer containers like "Recent Sessions") ──
      Flat, no shadow, white bg, thin top border separator */
@@ -626,6 +648,109 @@ customCSS: |
   /* Kill all remaining box shadows globally */
   *:not([data-slot="popover-content"]):not([data-slot="dropdown-content"]):not([role="dialog"]) {
     box-shadow: none !important;
+  }
+
+  /* ══════════════════════════════════════════
+     GMAIL PAGE POLISH
+     ══════════════════════════════════════════ */
+
+  /* Page-level padding — Gmail uses 0 side padding on the outer shell,
+     content areas have their own internal padding */
+  main > div > div { padding-left: 0 !important; padding-right: 0 !important; }
+
+  /* Section header rows (e.g. "Recent Sessions", "Filters") —
+     flat label, no card chrome, just a thin bottom divider */
+  .border.border-border > div:first-child,
+  [class*="border-border"] > div:first-child,
+  [class*="p-4 border-b"],
+  [class*="px-4 py-3"],
+  [class*="flex flex-col gap-1.5 p-4"] {
+    background: #f6f8fc !important;
+    border-bottom: 1px solid var(--cl-divider) !important;
+    border-radius: 0 !important;
+    padding: 10px 16px !important;
+    color: var(--cl-text-2) !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+  }
+
+  /* Session list rows — tighter Gmail density */
+  .flex.flex-col.sm\:flex-row.sm\:items-center {
+    padding: 8px 16px !important;
+    min-height: 52px !important;
+  }
+  .flex.flex-col.sm\:flex-row.sm\:items-center span.font-medium {
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    color: var(--cl-text-1) !important;
+  }
+
+  /* Session expanded accordion rows */
+  .border.overflow-hidden.transition-colors.border-border {
+    border: none !important;
+    border-bottom: 1px solid var(--cl-divider) !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+  }
+  .border.overflow-hidden.transition-colors.border-border > div:first-child {
+    padding: 8px 16px !important;
+    min-height: 52px !important;
+  }
+  .border.overflow-hidden.transition-colors.border-border:hover > div:first-child {
+    background: var(--cl-hover) !important;
+  }
+
+  /* Sticky filter panels (skills page, config page sidebar) */
+  .sm\:sticky { background: #f6f8fc !important; }
+
+  /* Category pills in skills */
+  button[class*="rounded-full"][class*="border"] {
+    border: 1px solid var(--cl-divider) !important;
+    border-radius: 9999px !important;
+    background: #f6f8fc !important;
+    color: var(--cl-text-2) !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    padding: 4px 12px !important;
+    height: auto !important;
+    box-shadow: none !important;
+  }
+  button[class*="rounded-full"][class*="border"][aria-pressed="true"],
+  button[class*="rounded-full"][data-state="active"] {
+    background: var(--cl-blue) !important;
+    color: #fff !important;
+    border-color: var(--cl-blue) !important;
+  }
+
+  /* Flat white containers — remove all card chrome */
+  [class*="bg-card\\/80"], [class*="bg-muted\\/20"] {
+    background: #ffffff !important;
+    border: none !important;
+    border-bottom: 1px solid var(--cl-divider) !important;
+    border-radius: 0 !important;
+  }
+
+  /* Log lines — flat rows */
+  [class*="font-mono"][class*="text-xs"][class*="py-"] {
+    border-bottom: 1px solid var(--cl-divider) !important;
+    padding: 6px 16px !important;
+    background: #ffffff !important;
+  }
+
+  /* Stat / summary cards (analytics) — white flat tiles separated by dividers */
+  [class*="border border-border"][class*="p-4"],
+  [class*="border border-border"][class*="p-6"] {
+    background: #ffffff !important;
+    border: none !important;
+    border-bottom: 1px solid var(--cl-divider) !important;
+    border-radius: 0 !important;
+    padding: 20px 24px !important;
+  }
+
+  /* Cron / skill toggle items — flat row list */
+  .border.border-border.bg-card\/80 > div[class*="p-3"],
+  .border.border-border.bg-card\/80 > div[class*="p-4"] {
+    padding: 12px 16px !important;
   }
 
   /* ══════════════════════════════════════════
