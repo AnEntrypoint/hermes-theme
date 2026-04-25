@@ -789,6 +789,127 @@ customCSS: |
   }
 
   /* ══════════════════════════════════════════
+     MATERIAL / GMAIL POLISH — backgrounds, not borders
+     ══════════════════════════════════════════ */
+  /* Kill EVERY 1px border on layout chrome — keep only on inputs */
+  .border.border-border,
+  [class*="border-border"],
+  [class*="border-b"], [class*="border-t"], [class*="border-l"], [class*="border-r"],
+  header, main, aside, section, article, nav, [role="tablist"],
+  table, thead, tbody, tr, th, td, hr, [data-slot="separator"] {
+    border-color: transparent !important;
+  }
+  /* Re-introduce subtle separation via bg surface tones, not lines */
+  [class*="border-border"] > [class*="border-b"],
+  [class*="border-border"] > div:first-child,
+  [class*="p-4 border-b"] {
+    border-bottom: none !important;
+    background: transparent !important;
+    padding: 16px 20px 4px !important;
+    color: var(--cl-text-3) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+  }
+  /* Row separation: gap, not divider — Gmail uses tonal hover only */
+  .border.border-border [class*="border border-border"],
+  [class*="border-border"] [class*="border border-border"],
+  [class*="border-b border-border"], [class*="border-b border-current"],
+  .border.overflow-hidden.transition-colors.border-border {
+    border: none !important;
+    border-bottom: none !important;
+    background: var(--cl-surface) !important;
+    border-radius: 0 !important;
+    transition: background 0.12s !important;
+  }
+  /* Table — borderless, zebra-bg via odd surface tone */
+  table { border: none !important; }
+  tr { border: none !important; background: transparent !important; }
+  tbody tr:nth-child(even) { background: var(--cl-surface-2) !important; }
+  tbody tr:hover { background: var(--cl-hover) !important; }
+  thead tr { background: transparent !important; }
+  th { border: none !important; color: var(--cl-text-3) !important; font-size: 0.6875rem !important; font-weight: 500 !important; text-transform: uppercase !important; letter-spacing: 0.08em !important; padding: 12px 16px !important; }
+  td { border: none !important; padding: 14px 16px !important; }
+
+  /* Inputs — Material filled style: no border, tonal fill, focus underline */
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="number"], input[type="url"], textarea, select {
+    background: var(--cl-hover) !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 4px 4px 0 0 !important;
+    padding: 12px 12px 10px !important;
+    font-size: 0.9375rem !important;
+    color: var(--cl-text-1) !important;
+    transition: background 0.15s, border-color 0.15s !important;
+  }
+  input[type="text"]:hover, textarea:hover, select:hover { background: #e8eaed !important; }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    background: var(--cl-hover) !important;
+    border-bottom-color: var(--cl-blue) !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  /* Cards: pure surface — no border, no shadow, gap-separated */
+  [class*="bg-card"], [class*="rounded-lg"][class*="border"] {
+    background: var(--cl-surface) !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+  }
+  /* Section gap → use page bg as gutter between cards */
+  main .grid, main .flex.flex-col {
+    gap: 12px !important;
+  }
+  main .grid > *, main .flex.flex-col > * {
+    border-radius: 0.5rem !important;
+  }
+
+  /* Tabs — Material indicator on bg, no border line */
+  [role="tablist"] {
+    border-bottom: none !important;
+    background: transparent !important;
+  }
+  [role="tab"] { border-bottom: 3px solid transparent !important; }
+  [role="tab"][aria-selected="true"], [role="tab"][data-state="active"] {
+    background: var(--cl-blue-light) !important;
+    color: var(--cl-blue) !important;
+    border-radius: 9999px !important;
+    border-bottom: none !important;
+    padding: 8px 16px !important;
+    margin: 6px 4px !important;
+  }
+  [role="tab"] {
+    border-radius: 9999px !important;
+    padding: 8px 16px !important;
+    margin: 6px 4px !important;
+  }
+
+  /* Badges/chips — flat, no border at all */
+  [data-slot="badge"], .inline-flex.items-center[class*="border"][class*="px-"] {
+    border: none !important;
+    background: var(--cl-hover) !important;
+  }
+
+  /* Page-title row — Gmail uses generous space, no divider */
+  header, [class*="h-14"][class*="border-b"], [class*="h-12"][class*="border-b"] {
+    border-bottom: none !important;
+    background: var(--cl-bg) !important;
+    height: 56px !important;
+  }
+
+  /* Section titles inside cards: small uppercase Gmail label */
+  main h2, main h3 {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: var(--cl-text-1) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  /* ══════════════════════════════════════════
      FULL-VIEWPORT FILL — kill scrolled dark reveal
      ══════════════════════════════════════════ */
   /* Body must paint behind the entire scrollable area, including overscroll */
