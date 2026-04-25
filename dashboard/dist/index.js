@@ -174,7 +174,7 @@
       // Must have a switch to confirm it's a skill row, not something else
       const sw = row.querySelector('[role="switch"]');
       if (!sw) return;
-      const nameEl = row.querySelector("span.font-mono-ui, a[href], span:first-child");
+      const nameEl = row.querySelector("span.font-mono-ui");
       if (!nameEl) return;
       const name = nameEl.textContent.trim();
       if (!name) return;
