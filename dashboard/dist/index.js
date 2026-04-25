@@ -346,6 +346,64 @@
       color: var(--cl-red) !important;
     }
 
+    /* Toggle switches — Material pill style */
+    button[role="switch"] {
+      border-radius: 9999px !important;
+      width: 36px !important;
+      height: 20px !important;
+      padding: 0 !important;
+      background: var(--cl-divider-strong) !important;
+      transition: background 0.15s !important;
+      box-shadow: none !important;
+    }
+    button[role="switch"][aria-checked="true"] {
+      background: var(--cl-blue) !important;
+    }
+    button[role="switch"] > span {
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 9999px !important;
+      background: #fff !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+      transition: transform 0.15s !important;
+      margin: 2px !important;
+      transform: translateX(0) !important;
+    }
+    button[role="switch"][aria-checked="true"] > span {
+      transform: translateX(16px) !important;
+    }
+
+    /* Secondary aside (Config / Skills filter pills) — give the sticky panel
+       breathing room at top + bottom and an own scroll-padding so the first
+       pill is never clipped. */
+    aside.sm\\:w-56 div.sm\\:sticky, aside[class*="sm:w-56"] div[class*="sm:sticky"] {
+      top: 16px !important;
+      padding-top: 8px !important;
+    }
+    aside.sm\\:w-56 div[class*="overflow-y-auto"],
+    aside[class*="sm:w-56"] div[class*="overflow-y-auto"] {
+      scroll-padding-top: 12px !important;
+      padding-top: 8px !important;
+    }
+
+    /* Helper text (description right under the label) — small italic muted */
+    main label + span.text-xs.text-muted-foreground\\/70,
+    main label ~ span[class*="text-muted-foreground"][class*="text-xs"] {
+      display: block !important;
+      font-size: 0.75rem !important;
+      font-weight: 400 !important;
+      font-style: italic !important;
+      color: var(--cl-text-3) !important;
+      margin: -2px 0 6px 0 !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+      opacity: 1 !important;
+    }
+    /* Tighter form-field gap so label + helper + input read as one block */
+    main div.grid.gap-1\\.5, main div.grid.gap-2 {
+      gap: 4px !important;
+    }
+
     /* Form inputs (text / textarea / select) — Material filled style with
        visible bg distinct from card surface, so the field is identifiable. */
     main input:not([type="search"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
