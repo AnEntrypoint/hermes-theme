@@ -134,73 +134,118 @@
     });
   }
 
-  // ─── Session rows (/sessions page) ────────────────────────────────────────
-  // Principle: backgrounds, not borders. Each row gets a tinted bg + colored
-  // title so the entity is identifiable without any border chrome.
+  // ─── Entity colouring (sessions, skills, cron jobs) ───────────────────────
+  // Every "creatable thing" the user sees becomes a row with:
+  //   1. A 4px left-edge swatch in the entity's accent colour.
+  //   2. A 33%-tinted row background.
+  //   3. Right-click on the swatch → re-roll palette index (deterministic
+  //      hash → manual override stored in localStorage).
+  //
+  // Identity strategy: prefer DOM-stable handles (anchor href / data-id),
+  // fall back to a hash of the row's full text snippet so even Untitled
+  // rows get distinct colours.
+  function rowIdentity(row) {
+    const a = row.querySelector('a[href]');
+    if (a) {
+      const h = a.getAttribute('href');
+      const m = h.match(/[?&/]([0-9a-f-]{8,})/i);
+      if (m) return m[1];
+      return h;
+    }
+    const id = row.getAttribute('data-id') || row.getAttribute('data-session-id') ||
+               row.getAttribute('data-cron-id') || row.getAttribute('data-skill');
+    if (id) return id;
+    // Fallback: snapshot of the row's text (truncated + collapsed) — stable
+    // across renders as long as the row's content doesn't change.
+    return (row.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  }
+
+  function ensureSwatch(row, name) {
+    let swatch = row.querySelector(':scope > .cl-swatch');
+    if (!swatch) {
+      swatch = document.createElement('span');
+      swatch.className = 'cl-swatch';
+      swatch.setAttribute('aria-label', 'entity colour — right-click to re-roll');
+      swatch.title = name + ' — right-click to re-roll colour';
+      // Position absolute against row (row should be relative)
+      const rs = getComputedStyle(row);
+      if (rs.position === 'static') row.style.position = 'relative';
+      row.insertBefore(swatch, row.firstChild);
+      swatch.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const cur = indexFor(name);
+        const next = (cur + 1) % P_LIGHT.length;
+        window.__debug['cl-skin'].reassign(name, next);
+      });
+      swatch.addEventListener('click', (e) => {
+        // shift+click = reset to default hash
+        if (e.shiftKey) {
+          e.preventDefault(); e.stopPropagation();
+          window.__debug['cl-skin'].reset(name);
+        }
+      });
+    }
+    const accent = colorsFor(name)[1];
+    swatch.style.cssText =
+      'position:absolute;left:0;top:0;bottom:0;width:4px;background:' + accent +
+      ';cursor:context-menu;z-index:1;';
+    swatch.dataset.clName = name;
+  }
+
   function paintRow(row, name, bgAlpha) {
     const [bg] = colorsFor(name);
     row.style.backgroundColor = bg + bgAlpha;
-    row.style.borderLeft = "none";
+    row.style.borderLeft = 'none';
+    ensureSwatch(row, name);
   }
 
   function colorSessions() {
-    // Compact rows
-    document.querySelectorAll("div.flex.flex-col.sm\\:flex-row.sm\\:items-center").forEach((row) => {
-      const titleEl = row.querySelector("span.font-medium");
+    // Compact rows (top "Recent Sessions" group)
+    document.querySelectorAll('div.flex.flex-col.sm\\:flex-row.sm\\:items-center').forEach((row) => {
+      const titleEl = row.querySelector('span.font-medium');
       const modelEl = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
       if (!titleEl || !modelEl) return;
-      const name = titleEl.textContent.trim() || "Untitled";
+      const name = rowIdentity(row);
       if (!mark(row, name)) return;
-      paintRow(row, name, "33");
+      paintRow(row, name, '33');
     });
 
-    // Accordion rows
-    document.querySelectorAll("div.border.overflow-hidden.transition-colors.border-border").forEach((row) => {
-      const modelEl = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
-      if (!modelEl) return;
-      const titleEl = row.querySelector("span.font-medium, span.font-semibold");
-      if (!titleEl) return;
-      const name = titleEl.textContent.trim() || "Untitled";
+    // Accordion rows (long list below). Identify by structural shape:
+    //   text contains "N msgs" + time-ago + source pill (cli/web/api).
+    document.querySelectorAll('div.border.overflow-hidden.transition-colors.border-border').forEach((row) => {
+      if (!/\b\d+\s*msgs?\b/.test(row.textContent || '')) return;
+      const name = rowIdentity(row);
       if (!mark(row, name)) return;
-      paintRow(row, name, "26");
+      paintRow(row, name, '26');
     });
   }
 
-  // ─── Skill rows (/skills page) ─────────────────────────────────────────────
-  // Each skill: div.group.flex.items-start.gap-3.px-3.py-2.5
-  // Name: first span.font-mono-ui or first anchor/span text
   function colorSkills() {
-    document.querySelectorAll("div.group.flex.items-start.gap-3").forEach((row) => {
-      // Must have a switch to confirm it's a skill row, not something else
+    document.querySelectorAll('div.group.flex.items-start.gap-3').forEach((row) => {
       const sw = row.querySelector('[role="switch"]');
       if (!sw) return;
-      const nameEl = row.querySelector("span.font-mono-ui");
+      const nameEl = row.querySelector('span.font-mono-ui');
       if (!nameEl) return;
       const name = nameEl.textContent.trim();
       if (!name) return;
       if (!mark(row, name)) return;
-      paintRow(row, name, "44");
+      paintRow(row, name, '44');
     });
   }
 
-  // ─── Cron job rows (/cron page) ────────────────────────────────────────────
-  // Job rows contain a name heading + schedule badge + status badge
-  // Selector: card containers with a cron schedule pattern (e.g. "0 9 * * *")
   function colorCronJobs() {
-    document.querySelectorAll("div.border.border-border.bg-card\\/80").forEach((card) => {
-      // Identify as cron job card: must have a schedule-like text (digits/stars/spaces)
-      const txt = card.textContent || "";
+    document.querySelectorAll('div.border.border-border.bg-card\\/80').forEach((card) => {
+      const txt = card.textContent || '';
       const hasSchedule = /\d+\s+[\d\*]+\s+[\d\*]+\s+[\d\*]+\s+[\d\*]+/.test(txt);
       const hasPause = card.querySelector('[aria-label*="ause"], [title*="ause"], [aria-label*="rigger"]');
       if (!hasSchedule && !hasPause) return;
-
-      // Name: first h3/h4 or first bold span
-      const nameEl = card.querySelector("h3, h4, span.font-semibold, span.font-medium");
+      const nameEl = card.querySelector('h3, h4, span.font-semibold, span.font-medium');
       if (!nameEl) return;
       const name = nameEl.textContent.trim();
-      if (!name || name === "New Cron Job") return; // skip create form
+      if (!name || name === 'New Cron Job') return;
       if (!mark(card, name)) return;
-      paintRow(card, name, "55");
+      paintRow(card, name, '55');
     });
   }
 
@@ -625,11 +670,13 @@
       overrides.set(name, idx);
       saveOverrides();
       cache.delete(name);
-      document.querySelectorAll(`[data-cl-colored="${name}"]`).forEach(el => {
+      const safe = CSS.escape ? CSS.escape(name) : name.replace(/[^\w-]/g, "_");
+      document.querySelectorAll(`[data-cl-colored="${safe}"]`).forEach(el => {
         delete el.dataset.clColored;
         el.style.removeProperty("border-left");
         el.style.removeProperty("background-color");
         el.style.removeProperty("color");
+        el.querySelectorAll(":scope > .cl-swatch").forEach(s => s.remove());
         el.querySelectorAll("[data-cl-title]").forEach(t => {
           delete t.dataset.clTitle;
           t.style.removeProperty("color");
@@ -643,11 +690,13 @@
       overrides.delete(name);
       saveOverrides();
       cache.delete(name);
-      document.querySelectorAll(`[data-cl-colored="${name}"]`).forEach(el => {
+      const safe = CSS.escape ? CSS.escape(name) : name.replace(/[^\w-]/g, "_");
+      document.querySelectorAll(`[data-cl-colored="${safe}"]`).forEach(el => {
         delete el.dataset.clColored;
         el.style.removeProperty("border-left");
         el.style.removeProperty("background-color");
         el.style.removeProperty("color");
+        el.querySelectorAll(":scope > .cl-swatch").forEach(s => s.remove());
         el.querySelectorAll("[data-cl-title]").forEach(t => {
           delete t.dataset.clTitle;
           t.style.removeProperty("color");
@@ -666,6 +715,7 @@
         el.style.removeProperty("border-left");
         el.style.removeProperty("background-color");
         el.style.removeProperty("color");
+        el.querySelectorAll(":scope > .cl-swatch").forEach(s => s.remove());
       });
       document.querySelectorAll("[data-cl-title]").forEach(t => {
         delete t.dataset.clTitle;
