@@ -373,6 +373,44 @@
       transform: translateX(16px) !important;
     }
 
+    /* Secondary aside header rows (Filters, Sections labels) — keep tight,
+       small, left-aligned. Don't inherit the border-border first-child
+       padding rule that puffs them up. */
+    aside.sm\\:w-56 div.flex.flex-col.border > div:first-child,
+    aside[class*="sm:w-56"] div.flex.flex-col.border > div:first-child {
+      padding: 8px 12px !important;
+      background: transparent !important;
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      color: var(--cl-text-3) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      justify-content: flex-start !important;
+    }
+    aside.sm\\:w-56 div.flex.flex-col.border > div:nth-child(2),
+    aside[class*="sm:w-56"] div.flex.flex-col.border > div:nth-child(2) {
+      padding: 8px 12px 4px !important;
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      color: var(--cl-text-3) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+    }
+    /* The "Filters" badge text inside the header row — stop being centered+blue */
+    aside.sm\\:w-56 div.flex.flex-col.border > div:first-child span,
+    aside[class*="sm:w-56"] div.flex.flex-col.border > div:first-child span {
+      font-size: 0.6875rem !important;
+      color: var(--cl-text-3) !important;
+      letter-spacing: 0.08em !important;
+      text-align: left !important;
+      flex: 0 1 auto !important;
+    }
+    /* Card outer — kill the bg-muted/20 grey rect, just stack the parts */
+    aside.sm\\:w-56 div.flex.flex-col.border,
+    aside[class*="sm:w-56"] div.flex.flex-col.border {
+      background: transparent !important;
+    }
+
     /* Secondary aside (Config / Skills filter pills) — give the sticky panel
        breathing room at top + bottom and an own scroll-padding so the first
        pill is never clipped. */
@@ -600,8 +638,12 @@
       color: var(--cl-text-2) !important;
       padding: 32px 0 !important;
     }
-    main [class*="text-center"][class*="text-muted"],
-    main p[class*="uppercase"], main div[class*="uppercase"] {
+    /* Empty-state center text (e.g. "No cron jobs configured…") — but NOT
+       inside the secondary aside, which has its own uppercase section labels
+       (Filters, Sections) that must stay tight. */
+    main [class*="text-center"][class*="text-muted"]:not(aside *),
+    main p[class*="uppercase"]:not(aside *):not(label),
+    main div[class*="uppercase"][class*="text-center"]:not(aside *) {
       font-size: 0.875rem !important;
       letter-spacing: 0 !important;
       font-weight: 400 !important;
