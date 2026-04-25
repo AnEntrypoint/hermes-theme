@@ -105,6 +105,16 @@ customCSS: |
     --cl-nav-width: 256px;
     --cl-nav-item-radius: 0 20px 20px 0;
     --cl-row-bg: #2d2e30 !important;
+    --cl-input-hover: #4a4d52 !important;
+    --cl-cta-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
+    --cl-cta-shadow-hover: 0 1px 3px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3) !important;
+    --cl-severity-warn-bg: #3d2e00 !important;
+    --cl-severity-warn-bg-alt: #443300 !important;
+    --cl-severity-warn-fg: #fdd663 !important;
+    --cl-severity-error-bg: #4a1512 !important;
+    --cl-severity-error-fg: #f28b82 !important;
+    --cl-severity-success-bg: #1a3320 !important;
+    --cl-severity-success-fg: #81c995 !important;
     --cl-shadow: none;
   }
 
@@ -533,8 +543,30 @@ customCSS: |
     display: flex !important; align-items: center !important;
     padding: 0 16px !important; gap: 12px !important;
   }
-  aside > div:first-child svg, aside > a:first-child svg {
+  /* Logo SVG sizing — scope to PRIMARY nav aside only, otherwise the
+     secondary aside's category-pill SVGs explode to 28px. */
+  aside.fixed > div:first-child svg, aside.fixed > a:first-child svg {
     width: 28px !important; height: 28px !important; color: #f28b82 !important;
+  }
+  /* Secondary aside (config category pills) — keep icons small + recoloured */
+  aside.sm\:w-56 svg, aside[class*="sm:w-56"] svg,
+  aside.sm\:w-56 button svg, aside[class*="sm:w-56"] button svg {
+    color: #9aa0a6 !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+  aside.sm\:w-56 button[class*="bg-foreground"] svg,
+  aside[class*="sm:w-56"] button[class*="bg-foreground"] svg {
+    color: #8ab4f8 !important;
+  }
+  /* Logo text — direct child only, scoped to primary nav aside */
+  aside.fixed > div:first-child > span,
+  aside.fixed > div:first-child > a {
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em !important;
+    color: #e8eaed !important;
+    mix-blend-mode: normal !important;
   }
   html { background: #1f1f1f !important; }
   body { background: #1f1f1f !important; min-height: 100vh !important; }

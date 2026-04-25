@@ -357,7 +357,9 @@
       max-width: 720px !important;
       width: 100% !important;
     }
-    input[type="search"]:hover, input[placeholder*="Search"]:hover { background: #e8eaed !important; }
+    input[type="search"]:hover, input[placeholder*="Search"]:hover {
+      background: var(--cl-input-hover, var(--cl-divider, rgba(0,0,0,0.04))) !important;
+    }
     input[type="search"]:focus, input[placeholder*="Search"]:focus {
       background: var(--cl-surface) !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04) !important;
@@ -554,6 +556,40 @@
       font-size: 0.75rem !important;
       text-transform: none !important;
       letter-spacing: 0 !important;
+    }
+
+    /* Log lines — theme-aware via custom properties so dark mode picks
+       dark surface/foreground variants automatically. */
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"],
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div {
+      background: var(--cl-surface) !important;
+      color: var(--cl-text-1) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div:nth-child(even) {
+      background: var(--cl-surface-2) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div:hover {
+      background: var(--cl-hover) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning,
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"] {
+      color: var(--cl-severity-warn-fg) !important;
+      background: var(--cl-severity-warn-bg) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning:nth-child(even),
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"]:nth-child(even) {
+      background: var(--cl-severity-warn-bg-alt) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-destructive,
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-destructive"],
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-error"] {
+      color: var(--cl-severity-error-fg) !important;
+      background: var(--cl-severity-error-bg) !important;
+    }
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-success,
+    div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-success"] {
+      color: var(--cl-severity-success-fg) !important;
+      background: var(--cl-severity-success-bg) !important;
     }
 
     /* CLI / source pill on the right of a session row */

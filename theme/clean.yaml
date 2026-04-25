@@ -108,6 +108,16 @@ customCSS: |
     --cl-nav-width: 256px;
     --cl-nav-item-radius: 0 20px 20px 0;
     --cl-row-bg: #ffffff !important;
+    --cl-input-hover: #e8eaed !important;
+    --cl-cta-shadow: 0 1px 2px rgba(60,64,67,0.15) !important;
+    --cl-cta-shadow-hover: 0 1px 3px rgba(60,64,67,0.25), 0 2px 6px rgba(60,64,67,0.10) !important;
+    --cl-severity-warn-bg: #fff8e1 !important;
+    --cl-severity-warn-bg-alt: #fef7e0 !important;
+    --cl-severity-warn-fg: #b06000 !important;
+    --cl-severity-error-bg: #fce8e6 !important;
+    --cl-severity-error-fg: #c5221f !important;
+    --cl-severity-success-bg: #e6f4ea !important;
+    --cl-severity-success-fg: #137333 !important;
     --cl-shadow: none;
   }
 
@@ -994,26 +1004,27 @@ customCSS: |
     z-index: 1 !important;
     position: relative !important;
   }
-  /* Severity colour: keep semantic colours but desaturated/inbox-tone */
+  /* Severity colour: theme-aware via custom properties so dark mode picks
+     dark surface/foreground variants automatically. */
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning,
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"] {
-    color: #b06000 !important;
-    background: #fff8e1 !important;
+    color: var(--cl-severity-warn-fg) !important;
+    background: var(--cl-severity-warn-bg) !important;
   }
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-warning:nth-child(even),
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-warning"]:nth-child(even) {
-    background: #fef7e0 !important;
+    background: var(--cl-severity-warn-bg-alt) !important;
   }
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-destructive,
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-destructive"],
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-error"] {
-    color: #c5221f !important;
-    background: #fce8e6 !important;
+    color: var(--cl-severity-error-fg) !important;
+    background: var(--cl-severity-error-bg) !important;
   }
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-success,
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div[class*="text-success"] {
-    color: #137333 !important;
-    background: #e6f4ea !important;
+    color: var(--cl-severity-success-fg) !important;
+    background: var(--cl-severity-success-bg) !important;
   }
   div[class*="font-mono"][class*="text-xs"][class*="overflow-auto"] > div.text-muted-foreground {
     color: var(--cl-text-3) !important;
