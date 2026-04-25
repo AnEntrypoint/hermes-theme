@@ -208,7 +208,7 @@ customCSS: |
   }
 
   /* Logo area */
-  aside > div:first-child {
+  aside.fixed > div:first-child {
     background: var(--cl-bg) !important;
     border-bottom: none !important;
     padding: 0 16px !important;
@@ -793,8 +793,8 @@ customCSS: |
   /* ══════════════════════════════════════════
      LOGO CORNER (top-left) — inbox logo well
      ══════════════════════════════════════════ */
-  aside > div:first-child,
-  aside > a:first-child,
+  aside.fixed > div:first-child,
+  aside.fixed > a:first-child,
   aside header, aside [class*="h-14"]:first-child, aside [class*="h-16"]:first-child {
     background: #f6f8fc !important;
     border-bottom: none !important;
@@ -807,7 +807,7 @@ customCSS: |
     gap: 12px !important;
   }
   /* Logo SVG/icon */
-  aside > div:first-child svg, aside > a:first-child svg {
+  aside.fixed > div:first-child svg, aside.fixed > a:first-child svg {
     width: 28px !important;
     height: 28px !important;
     color: var(--cl-red) !important;
