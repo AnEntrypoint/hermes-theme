@@ -201,24 +201,67 @@
   }
 
   function colorSessions() {
-    // Compact rows (top "Recent Sessions" group)
-    document.querySelectorAll('div.flex.flex-col.sm\\:flex-row.sm\\:items-center').forEach((row) => {
-      const titleEl = row.querySelector('span.font-medium');
-      const modelEl = row.querySelector("span.font-mono-ui, span[class*='font-mono']");
-      if (!titleEl || !modelEl) return;
+    // "Recent Sessions" card rows. The upstream UI marks them cursor:pointer
+    // but ships no onClick handler — so the user thinks the app is broken.
+    // Wire each card row to scroll its matching accordion entry into view
+    // and expand it. Identity = card row's text snapshot, matched to the
+    // accordion list below.
+    document.querySelectorAll(
+      'div.flex.flex-col.sm\\:flex-row.sm\\:items-center.sm\\:justify-between'
+    ).forEach((row) => {
+      // Must look like a card row (has Untitled-style title span + a model
+      // monospace span). Header bar doesn't match this combo.
+      const hasTitle = row.querySelector('span.font-medium, span.text-sm');
+      const hasMeta = /\b\d+\s*msgs?\b/.test(row.textContent || '');
+      if (!hasTitle || !hasMeta) return;
       const name = rowIdentity(row);
       if (!mark(row, name)) return;
       paintRow(row, name, '33');
+      if (row.dataset.clClickHandler === '1') return;
+      row.dataset.clClickHandler = '1';
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.cl-swatch')) return;
+        if (e.target.closest('button, a, [role="button"]')) return;
+        const target = findAccordionRowByText(name);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const trig = target.querySelector('div.cursor-pointer');
+        if (trig) {
+          // expand if not already
+          if (target.getBoundingClientRect().height < 100) trig.click();
+          target.style.outline = '2px solid var(--cl-blue)';
+          setTimeout(() => { target.style.outline = ''; }, 1200);
+        }
+      });
     });
 
-    // Accordion rows (long list below). Identify by structural shape:
-    //   text contains "N msgs" + time-ago + source pill (cli/web/api).
+    // Accordion rows (long list below). Same identity scheme so clicks
+    // on the top card find the matching entry here.
     document.querySelectorAll('div.border.overflow-hidden.transition-colors.border-border').forEach((row) => {
       if (!/\b\d+\s*msgs?\b/.test(row.textContent || '')) return;
       const name = rowIdentity(row);
       if (!mark(row, name)) return;
       paintRow(row, name, '26');
     });
+  }
+
+  // Match a card row to its corresponding accordion row by extracting the
+  // first-message preview (trailing text between "ago" and the source pill)
+  // — that's the most uniquely identifying fragment.
+  function findAccordionRowByText(name) {
+    // name = "Untitled<model> · N msgs · time ago<preview><source>"
+    const previewMatch = name.match(/ago(.+?)(cli|web|api|telegram|discord|slack)?$/i);
+    const preview = previewMatch ? previewMatch[1].trim() : '';
+    const msgMatch = name.match(/·\s*(\d+)\s*msgs?/i);
+    const accs = document.querySelectorAll('div.border.overflow-hidden.transition-colors.border-border');
+    for (const a of accs) {
+      const t = (a.textContent || '');
+      if (preview && !t.includes(preview)) continue;
+      if (msgMatch && !t.includes(msgMatch[1] + ' msg')) continue;
+      return a;
+    }
+    return null;
   }
 
   function colorSkills() {
